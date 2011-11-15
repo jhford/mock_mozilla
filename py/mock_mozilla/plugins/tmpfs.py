@@ -7,8 +7,8 @@
 import os
 
 # our imports
-from mockbuild.trace_decorator import decorate, traceLog, getLog
-import mockbuild.util
+from mock_mozilla.trace_decorator import decorate, traceLog, getLog
+import mock_mozilla.util
 
 requires_api_version = "1.0"
 
@@ -52,7 +52,7 @@ class Tmpfs(object):
         getLog().info("mounting tmpfs at %s." % self.rootObj.makeChrootPath())
         mountCmd = ["mount", "-n", "-t", "tmpfs"] + self.optArgs + \
                    ["mock_chroot_tmpfs", self.rootObj.makeChrootPath()]
-        mockbuild.util.do(mountCmd, shell=False)
+        mock_mozilla.util.do(mountCmd, shell=False)
 
     decorate(traceLog())
     def _tmpfsUmount(self):
@@ -61,7 +61,7 @@ class Tmpfs(object):
         # since we're in a separate namespace, the mount will be cleaned up
         # on exit, so just warn if it fails here
         try:
-            mockbuild.util.do(mountCmd, shell=False)
+            mock_mozilla.util.do(mountCmd, shell=False)
         except:
             getLog().warning("tmpfs-plugin: exception while umounting tmpfs! (cwd: %s)" % os.getcwd())
 

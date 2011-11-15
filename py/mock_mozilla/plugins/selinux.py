@@ -11,15 +11,15 @@ import stat
 import atexit
 
 # our imports
-from mockbuild.trace_decorator import decorate, traceLog, getLog
-import mockbuild.util
+from mock_mozilla.trace_decorator import decorate, traceLog, getLog
+import mock_mozilla.util
 
 requires_api_version = "1.0"
 
 # plugin entry point
 decorate(traceLog())
 def init(rootObj, conf):
-    if mockbuild.util.selinuxEnabled():
+    if mock_mozilla.util.selinuxEnabled():
         getLog().info("selinux enabled")
         SELinux(rootObj, conf)
     else:
@@ -54,7 +54,7 @@ class SELinux(object):
 
     decorate(traceLog())
     def _selinuxCreateFauxFilesystems(self):
-        (fd, path) = tempfile.mkstemp(prefix="mock-selinux-plugin.")
+        (fd, path) = tempfile.mkstemp(prefix="mock-mozilla-selinux-plugin.")
 
         host = open("/proc/filesystems")
         try:
@@ -80,12 +80,12 @@ class SELinux(object):
 
     decorate(traceLog())
     def _selinuxPreYumHook(self):
-        self._originalUtilDo = mockbuild.util.do
-        mockbuild.util.do = self._selinuxDoYum
+        self._originalUtilDo = mock_mozilla.util.do
+        mock_mozilla.util.do = self._selinuxDoYum
 
     decorate(traceLog())
     def _selinuxPostYumHook(self):
-        mockbuild.util.do = self._originalUtilDo
+        mock_mozilla.util.do = self._originalUtilDo
 
     decorate(traceLog())
     def _selinuxDoYum(self, command, *args, **kargs):

@@ -4,9 +4,9 @@
 
 ####################################
 # change version here. --> BOTH PLACES PLEASE!
-AC_INIT([mock],[1.1.17])
+AC_INIT([mock_mozilla],[1.1.17])
 
-temp_RELEASE_NAME=mock
+temp_RELEASE_NAME=mock_mozilla
 temp_RELEASE_MAJOR=1
 temp_RELEASE_MINOR=1
 temp_RELEASE_SUBLEVEL=17
@@ -64,6 +64,6 @@ AC_SUBST([RELEASE_RPM_EXTRALEVEL])
 
 # generate files and exit
 #AC_CONFIG_FILES([ Makefile ${PACKAGE_NAME}.spec ])
-AC_CONFIG_FILES([ Makefile mock.spec ])
+AC_CONFIG_FILES([ Makefile mock_mozilla.spec ])
 AC_OUTPUT
 

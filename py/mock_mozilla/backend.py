@@ -23,9 +23,9 @@ except:
 
 
 # our imports
-import mockbuild.util
-import mockbuild.exception
-from mockbuild.trace_decorator import traceLog, decorate, getLog
+import mock_mozilla.util
+import mock_mozilla.exception
+from mock_mozilla.trace_decorator import traceLog, decorate, getLog
 
 # classes
 class Root(object):
@@ -55,17 +55,17 @@ class Root(object):
         # result dir
         self.resultdir = config['resultdir'] % config
 
-        self.root_log = getLog("mockbuild")
-        self.build_log = getLog("mockbuild.Root.build")
-        self._state_log = getLog("mockbuild.Root.state")
+        self.root_log = getLog("mock_mozilla")
+        self.build_log = getLog("mock_mozilla.Root.build")
+        self._state_log = getLog("mock_mozilla.Root.state")
 
         # config options
         self.configs = config['config_paths']
         self.config_name = config['chroot_name']
         self.chrootuid = config['chrootuid']
-        self.chrootuser = 'mockbuild'
+        self.chrootuser = 'mock_mozilla'
         self.chrootgid = config['chrootgid']
-        self.chrootgroup = 'mockbuild'
+        self.chrootgroup = 'mock_mozilla'
         self.yum_conf_content = config['yum.conf']
         self.yum_rhnplugin_conf_content = config['rhnplugin.conf']
         self.use_host_resolv = config['use_host_resolv']
@@ -119,7 +119,7 @@ class Root(object):
         # if the selinux plugin is disabled and we have SELinux enabled
         # on the host, we need to do SELinux things, so set the selinux
         # state variable to true
-        if self.pluginConf['selinux_enable'] == False and mockbuild.util.selinuxEnabled():
+        if self.pluginConf['selinux_enable'] == False and mock_mozilla.util.selinuxEnabled():
             self.selinux = True
 
         # officially set state so it is logged
@@ -150,7 +150,7 @@ class Root(object):
         self.tryLockBuildRoot()
         self.state("clean")
         self._callHooks('clean')
-        mockbuild.util.orphansKill(self.makeChrootPath())
+        mock_mozilla.util.orphansKill(self.makeChrootPath())
         self._unlock_and_rm_chroot()
         self.chrootWasCleaned = True
         self.unlockBuildRoot()
@@ -161,11 +161,11 @@ class Root(object):
             return
         t = self.basedir + ".tmp"
         if os.path.exists(t):
-            mockbuild.util.rmtree(t, selinux=self.selinux)
+            mock_mozilla.util.rmtree(t, selinux=self.selinux)
         os.rename(self.basedir, t)
         self.buildrootLock.close()
         try:
-            mockbuild.util.rmtree(t, selinux=self.selinux)
+            mock_mozilla.util.rmtree(t, selinux=self.selinux)
         except OSError, e:
             self.root_log.error(e)
             self.root_log.error("contents of /proc/mounts:\n%s" % open('/proc/mounts').read())
@@ -186,23 +186,23 @@ class Root(object):
                 self.root_log.info("scrubbing everything for %s" % self.config_name)
                 self._unlock_and_rm_chroot()
                 self.chrootWasCleaned = True
-                mockbuild.util.rmtree(self.cachedir, selinux=self.selinux)
+                mock_mozilla.util.rmtree(self.cachedir, selinux=self.selinux)
             elif scrub == 'chroot':
                 self.root_log.info("scrubbing chroot for %s" % self.config_name)
                 self._unlock_and_rm_chroot()
                 self.chrootWasCleaned = True
             elif scrub == 'cache':
                 self.root_log.info("scrubbing cache for %s" % self.config_name)
-                mockbuild.util.rmtree(self.cachedir, selinux=self.selinux)
+                mock_mozilla.util.rmtree(self.cachedir, selinux=self.selinux)
             elif scrub == 'c-cache':
                 self.root_log.info("scrubbing c-cache for %s" % self.config_name)
-                mockbuild.util.rmtree(os.path.join(self.cachedir, 'ccache'), selinux=self.selinux)
+                mock_mozilla.util.rmtree(os.path.join(self.cachedir, 'ccache'), selinux=self.selinux)
             elif scrub == 'root-cache':
                 self.root_log.info("scrubbing root-cache for %s" % self.config_name)
-                mockbuild.util.rmtree(os.path.join(self.cachedir, 'root_cache'), selinux=self.selinux)
+                mock_mozilla.util.rmtree(os.path.join(self.cachedir, 'root_cache'), selinux=self.selinux)
             elif scrub == 'yum-cache':
                 self.root_log.info("scrubbing yum-cache for %s" % self.config_name)
-                mockbuild.util.rmtree(os.path.join(self.cachedir, 'yum_cache'), selinux=self.selinux)
+                mock_mozilla.util.rmtree(os.path.join(self.cachedir, 'yum_cache'), selinux=self.selinux)
         self.unlockBuildRoot()
 
     decorate(traceLog())
@@ -216,7 +216,7 @@ class Root(object):
         try:
             fcntl.lockf(self.buildrootLock.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
         except IOError, e:
-            raise mockbuild.exception.BuildRootLocked, "Build root is locked by another process."
+            raise mock_mozilla.exception.BuildRootLocked, "Build root is locked by another process."
 
         return 1
 
@@ -256,14 +256,14 @@ class Root(object):
         #   --> no /etc/yum.conf symlink (F7 and above)
 
         # create our base directory hierarchy
-        mockbuild.util.mkdirIfAbsent(self.basedir)
-        mockbuild.util.mkdirIfAbsent(self.makeChrootPath())
+        mock_mozilla.util.mkdirIfAbsent(self.basedir)
+        mock_mozilla.util.mkdirIfAbsent(self.makeChrootPath())
 
         self.uidManager.dropPrivsTemp()
         try:
-            mockbuild.util.mkdirIfAbsent(self.resultdir)
-        except (mockbuild.exception.Error,), e:
-            raise mockbuild.exception.ResultDirNotAccessible( mockbuild.exception.ResultDirNotAccessible.__doc__ % self.resultdir )
+            mock_mozilla.util.mkdirIfAbsent(self.resultdir)
+        except (mock_mozilla.exception.Error,), e:
+            raise mock_mozilla.exception.ResultDirNotAccessible( mock_mozilla.exception.ResultDirNotAccessible.__doc__ % self.resultdir )
         self.uidManager.restorePrivs()
 
         # lock this buildroot so we dont get stomped on.
@@ -308,7 +308,7 @@ class Root(object):
         # write in yum rhnplugin.conf into chroot
         # always truncate and overwrite (w+)
         self.root_log.debug('configure yum rhnplugin')
-        mockbuild.util.mkdirIfAbsent(yumpluginconfdir)
+        mock_mozilla.util.mkdirIfAbsent(yumpluginconfdir)
         rhnconf = self.makeChrootPath('etc', 'yum', 'pluginconf.d', 'rhnplugin.conf')
         rhnconf_fo = open(rhnconf, 'w+')
         rhnconf_fo.write(self.yum_rhnplugin_conf_content)
@@ -343,7 +343,7 @@ class Root(object):
             p = self.makeChrootPath(key)
             if not os.path.exists(p):
                 # create directory if necessary
-                mockbuild.util.mkdirIfAbsent(os.path.dirname(p))
+                mock_mozilla.util.mkdirIfAbsent(os.path.dirname(p))
                 # write file
                 fo = open(p, 'w+')
                 fo.write(self.chroot_file_contents[key])
@@ -383,9 +383,9 @@ class Root(object):
     decorate(traceLog())
     def _setupDev(self, interactive=False):
         # files in /dev
-        mockbuild.util.rmtree(self.makeChrootPath("dev"), selinux=self.selinux)
-        mockbuild.util.mkdirIfAbsent(self.makeChrootPath("dev", "pts"))
-        mockbuild.util.mkdirIfAbsent(self.makeChrootPath("dev", "shm"))
+        mock_mozilla.util.rmtree(self.makeChrootPath("dev"), selinux=self.selinux)
+        mock_mozilla.util.mkdirIfAbsent(self.makeChrootPath("dev", "pts"))
+        mock_mozilla.util.mkdirIfAbsent(self.makeChrootPath("dev", "shm"))
         prevMask = os.umask(0000)
         devFiles = [
             (stat.S_IFCHR | 0666, os.makedev(1, 3), "dev/null"),
@@ -405,7 +405,7 @@ class Root(object):
             # set context. (only necessary if host running selinux enabled.)
             # fails gracefully if chcon not installed.
             if self.selinux:
-                mockbuild.util.do(
+                mock_mozilla.util.do(
                     ["chcon", "--reference=/%s"% i[2], self.makeChrootPath(i[2])]
                     , raiseExc=0, shell=False)
 
@@ -417,7 +417,7 @@ class Root(object):
         os.chown(self.makeChrootPath('dev/ptmx'), pwd.getpwnam('root')[2], grp.getgrnam('tty')[2])
 
         # symlink /dev/fd in the chroot for everything except RHEL4
-        if mockbuild.util.cmpKernelEVR(kver, '2.6.9') > 0:
+        if mock_mozilla.util.cmpKernelEVR(kver, '2.6.9') > 0:
             os.symlink("/proc/self/fd",   self.makeChrootPath("dev/fd"))
 
         os.umask(prevMask)
@@ -430,7 +430,7 @@ class Root(object):
                 self.umountCmds.append(devUnmtCmd)
 
         mountopt = 'gid=%d,mode=0620,ptmxmode=0666' % grp.getgrnam('tty').gr_gid
-        if mockbuild.util.cmpKernelEVR(kver, '2.6.29') >= 0:
+        if mock_mozilla.util.cmpKernelEVR(kver, '2.6.29') >= 0:
             mountopt += ',newinstance'
 
         for devMntCmd in (
@@ -439,7 +439,7 @@ class Root(object):
             if devMntCmd not in self.mountCmds:
                 self.mountCmds.append(devMntCmd)
 
-        if mockbuild.util.cmpKernelEVR(kver, '2.6.29') >= 0:
+        if mock_mozilla.util.cmpKernelEVR(kver, '2.6.29') >= 0:
             os.unlink(self.makeChrootPath('/dev/ptmx'))
             os.symlink("pts/ptmx", self.makeChrootPath('/dev/ptmx'))
 
@@ -463,7 +463,7 @@ class Root(object):
                      'proc',
                      'sys',
                     ]:
-            mockbuild.util.mkdirIfAbsent(self.makeChrootPath(item))
+            mock_mozilla.util.mkdirIfAbsent(self.makeChrootPath(item))
 
     decorate(traceLog())
     def _setupFiles(self):
@@ -472,7 +472,7 @@ class Root(object):
         for item in [self.makeChrootPath('etc', 'mtab'),
                      self.makeChrootPath('etc', 'fstab'),
                      self.makeChrootPath('var', 'log', 'yum.log')]:
-            mockbuild.util.touch(item)
+            mock_mozilla.util.touch(item)
 
 
 
@@ -481,7 +481,7 @@ class Root(object):
     #decorate(traceLog())
     def doChroot(self, command, env="", shell=True, returnOutput=False, *args, **kargs):
         """execute given command in root"""
-        return mockbuild.util.do(command, chrootPath=self.makeChrootPath(),
+        return mock_mozilla.util.do(command, chrootPath=self.makeChrootPath(),
                             returnOutput=returnOutput, shell=shell, *args, **kargs )
 
     decorate(traceLog())
@@ -526,13 +526,13 @@ class Root(object):
                 output = self._yum(cmd, returnOutput=1)
                 for line in output.split('\n'):
                     if line.lower().find('No Package found for'.lower()) != -1:
-                        raise mockbuild.exception.BuildError, "Bad build req: %s. Exiting." % line
+                        raise mock_mozilla.exception.BuildError, "Bad build req: %s. Exiting." % line
 
             # first, install pre-existing deps and configured additional ones
             deps = list(self.preExistingDeps)
-            for hdr in mockbuild.util.yieldSrpmHeaders(srpms, plainRpmOk=1):
+            for hdr in mock_mozilla.util.yieldSrpmHeaders(srpms, plainRpmOk=1):
                 # get text buildreqs
-                deps.extend(mockbuild.util.getAddtlReqs(hdr, self.more_buildreqs))
+                deps.extend(mock_mozilla.util.getAddtlReqs(hdr, self.more_buildreqs))
             if deps:
                 # everything exists, okay, install them all.
                 # pass build reqs to installer
@@ -588,7 +588,7 @@ class Root(object):
             # rebuild srpm/rpm from SPEC file
             specs = glob.glob(self.makeChrootPath(self.builddir, "SPECS", "*.spec"))
             if len(specs) < 1:
-                raise mockbuild.exception.PkgError, "No Spec file found in srpm: %s" % srpmBasename
+                raise mock_mozilla.exception.PkgError, "No Spec file found in srpm: %s" % srpmBasename
 
             spec = specs[0] # if there's more than one then someone is an idiot
             chrootspec = spec.replace(self.makeChrootPath(), '') # get rid of rootdir prefix
@@ -604,7 +604,7 @@ class Root(object):
 
             rebuiltSrpmFile = glob.glob("%s/%s/SRPMS/*.src.rpm" % (self.makeChrootPath(), self.builddir))
             if len(rebuiltSrpmFile) != 1:
-                raise mockbuild.exception.PkgError, "Expected to find single rebuilt srpm, found %d." % len(rebuiltSrpmFile)
+                raise mock_mozilla.exception.PkgError, "Expected to find single rebuilt srpm, found %d." % len(rebuiltSrpmFile)
 
             rebuiltSrpmFile = rebuiltSrpmFile[0]
             self.installSrpmDeps(rebuiltSrpmFile)
@@ -661,7 +661,7 @@ class Root(object):
             log.debug("shell: mounting all filesystems")
             self._mountall()
             self.state("shell")
-            ret = mockbuild.util.doshell(chrootPath=self.makeChrootPath(), 
+            ret = mock_mozilla.util.doshell(chrootPath=self.makeChrootPath(), 
                                          uid=uid, gid=gid,
                                          cmd=cmd)
         finally:
@@ -748,7 +748,7 @@ class Root(object):
 
             rebuiltSrpmFile = glob.glob("%s/%s/SRPMS/*.src.rpm" % (self.makeChrootPath(), self.builddir))
             if len(rebuiltSrpmFile) != 1:
-                raise mockbuild.exception.PkgError, "Expected to find single rebuilt srpm, found %d." % len(rebuiltSrpmFile)
+                raise mock_mozilla.exception.PkgError, "Expected to find single rebuilt srpm, found %d." % len(rebuiltSrpmFile)
 
             rebuiltSrpmFile = rebuiltSrpmFile[0]
             srpmBasename = rebuiltSrpmFile.split("/")[-1]
@@ -795,7 +795,7 @@ class Root(object):
                 fp.close()
 
             if not hasattr(module, 'requires_api_version'):
-                raise mockbuild.exception.Error('Plugin "%s" doesn\'t specify required API version' % modname)
+                raise mock_mozilla.exception.Error('Plugin "%s" doesn\'t specify required API version' % modname)
 
             module.init(self, self.pluginConf["%s_opts" % modname])
 
@@ -804,7 +804,7 @@ class Root(object):
         """mount 'normal' fs like /dev/ /proc/ /sys"""
         for cmd in self.mountCmds:
             self.root_log.debug(cmd)
-            mockbuild.util.do(cmd, shell=True)
+            mock_mozilla.util.do(cmd, shell=True)
 
     decorate(traceLog())
     def _umountall(self):
@@ -812,8 +812,8 @@ class Root(object):
         # first try removing all expected mountpoints.
         for cmd in reversed(self.umountCmds):
             try:
-                mockbuild.util.do(cmd, raiseExc=1, shell=True)
-            except mockbuild.exception.Error, e:
+                mock_mozilla.util.do(cmd, raiseExc=1, shell=True)
+            except mock_mozilla.exception.Error, e:
                 # the exception already contains info about the error.
                 self.root_log.warning(e)
                 self._show_path_user(cmd.split()[-1])
@@ -826,13 +826,13 @@ class Root(object):
             if os.path.realpath(mountpoint).startswith(os.path.realpath(self.makeChrootPath()) + "/"):
                 cmd = "umount -n %s" % mountpoint
                 self.root_log.warning("Forcibly unmounting '%s' from chroot." % mountpoint)
-                mockbuild.util.do(cmd, raiseExc=0, shell=True)
+                mock_mozilla.util.do(cmd, raiseExc=0, shell=True)
 
     decorate(traceLog())
     def _show_path_user(self, path):
         cmd = ['/sbin/fuser', '-a', '-v', path]
         self.root_log.debug("using 'fuser' to find users of %s" % path)
-        out = mockbuild.util.do(cmd, returnOutput=1, raiseExc=False)
+        out = mock_mozilla.util.do(cmd, returnOutput=1, raiseExc=False)
         self.root_log.debug(out)
         return out
 
@@ -857,19 +857,19 @@ class Root(object):
         output = ""
         try:
             self._callHooks("preyum")
-            output = mockbuild.util.do(yumcmd, returnOutput=returnOutput)
+            output = mock_mozilla.util.do(yumcmd, returnOutput=returnOutput)
             self._callHooks("postyum")
             return output
-        except mockbuild.exception.Error, e:
-            raise mockbuild.exception.YumError, str(e)
+        except mock_mozilla.exception.Error, e:
+            raise mock_mozilla.exception.YumError, str(e)
 
     decorate(traceLog())
     def _makeBuildUser(self):
         if not os.path.exists(self.makeChrootPath('usr/sbin/useradd')):
-            raise mockbuild.exception.RootError, "Could not find useradd in chroot, maybe the install failed?"
+            raise mock_mozilla.exception.RootError, "Could not find useradd in chroot, maybe the install failed?"
 
         # safe and easy. blow away existing /builddir and completely re-create.
-        mockbuild.util.rmtree(self.makeChrootPath(self.homedir), selinux=self.selinux)
+        mock_mozilla.util.rmtree(self.makeChrootPath(self.homedir), selinux=self.selinux)
         dets = { 'uid': str(self.chrootuid), 'gid': str(self.chrootgid), 'user': self.chrootuser, 'group': self.chrootgroup, 'home': self.homedir }
 
         # ok for these two to fail
@@ -937,7 +937,7 @@ class Root(object):
         try:
             # create dir structure
             for subdir in [self.makeChrootPath(self.builddir, s) for s in ('RPMS', 'SRPMS', 'SOURCES', 'SPECS', 'BUILD', 'BUILDROOT', 'originals')]:
-                mockbuild.util.mkdirIfAbsent(subdir)
+                mock_mozilla.util.mkdirIfAbsent(subdir)
 
             # change ownership so we can write to build home dir
             for (dirpath, dirnames, filenames) in os.walk(self.makeChrootPath(self.homedir)):

@@ -20,9 +20,9 @@ import time
 import errno
 
 # our imports
-import mockbuild.exception
-from mockbuild.trace_decorator import traceLog, decorate, getLog
-import mockbuild.uid as uid
+import mock_mozilla.exception
+from mock_mozilla.trace_decorator import traceLog, decorate, getLog
+import mock_mozilla.uid as uid
 
 _libc = ctypes.cdll.LoadLibrary(None)
 _errno = ctypes.c_int.in_dll(_libc, "errno")
@@ -44,9 +44,9 @@ personality_defs = {
 }
 
 # classes
-class commandTimeoutExpired(mockbuild.exception.Error):
+class commandTimeoutExpired(mock_mozilla.exception.Error):
     def __init__(self, msg):
-        mockbuild.exception.Error.__init__(self, msg)
+        mock_mozilla.exception.Error.__init__(self, msg)
         self.msg = msg
         self.resultcode = 10
 
@@ -61,7 +61,7 @@ def mkdirIfAbsent(*args):
                 os.makedirs(dirName)
             except OSError, e:
                 getLog().exception("Could not create dir %s. Error: %s" % (dirName, e))
-                raise mockbuild.exception.Error, "Could not create dir %s. Error: %s" % (dirName, e)
+                raise mock_mozilla.exception.Error, "Could not create dir %s. Error: %s" % (dirName, e)
 
 decorate(traceLog())
 def touch(fileName):
@@ -128,10 +128,10 @@ def yieldSrpmHeaders(srpms, plainRpmOk=0):
         try:
             hdr = rpmUtils.miscutils.hdrFromPackage(ts, srpm)
         except (rpmUtils.RpmUtilsError,), e:
-            raise mockbuild.exception.Error, "Cannot find/open srpm: %s. Error: %s" % (srpm, ''.join(e))
+            raise mock_mozilla.exception.Error, "Cannot find/open srpm: %s. Error: %s" % (srpm, ''.join(e))
 
         if not plainRpmOk and hdr[rpm.RPMTAG_SOURCEPACKAGE] != 1:
-            raise mockbuild.exception.Error("File is not an srpm: %s." % srpm )
+            raise mock_mozilla.exception.Error("File is not an srpm: %s." % srpm )
 
         yield hdr
 
@@ -183,7 +183,7 @@ def unshare(flags):
     try:
         res = _libc.unshare(flags)
         if res:
-            raise mockbuild.exception.UnshareFailed(os.strerror(_errno.value))
+            raise mock_mozilla.exception.UnshareFailed(os.strerror(_errno.value))
     except AttributeError, e:
         pass
 
@@ -340,9 +340,9 @@ def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True
     logger.debug("Child return code was: %s" % str(child.returncode))
     if raiseExc and child.returncode:
         if returnOutput:
-            raise mockbuild.exception.Error, ("Command failed: \n # %s\n%s" % (command, output), child.returncode)
+            raise mock_mozilla.exception.Error, ("Command failed: \n # %s\n%s" % (command, output), child.returncode)
         else:
-            raise mockbuild.exception.Error, ("Command failed. See logs for output.\n # %s" % (command,), child.returncode)
+            raise mock_mozilla.exception.Error, ("Command failed. See logs for output.\n # %s" % (command,), child.returncode)
 
     return output
 

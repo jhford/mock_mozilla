@@ -48,11 +48,11 @@ from glob import glob
 __VERSION__ = "unreleased_version"
 SYSCONFDIR = os.path.join(os.path.dirname(os.path.realpath(sys.argv[0])), "..", "etc")
 PYTHONDIR = os.path.dirname(os.path.realpath(sys.argv[0]))
-PKGPYTHONDIR = os.path.join(os.path.dirname(os.path.realpath(sys.argv[0])), "mockbuild")
-MOCKCONFDIR = os.path.join(SYSCONFDIR, "mock")
+PKGPYTHONDIR = os.path.join(os.path.dirname(os.path.realpath(sys.argv[0])), "mock_mozilla")
+MOCKCONFDIR = os.path.join(SYSCONFDIR, "mock_mozilla")
 # end build system subs
 
-# import all mockbuild.* modules after this.
+# import all mock_mozilla.* modules after this.
 sys.path.insert(0, PYTHONDIR)
 
 # set up basic logging until config file can be read
@@ -61,12 +61,12 @@ logging.basicConfig(format=FORMAT, level=logging.WARNING)
 log = logging.getLogger()
 
 # our imports
-import mockbuild.exception
-from mockbuild.trace_decorator import traceLog, decorate
-import mockbuild.backend
-import mockbuild.scm
-import mockbuild.uid
-import mockbuild.util
+import mock_mozilla.exception
+from mock_mozilla.trace_decorator import traceLog, decorate
+import mock_mozilla.backend
+import mock_mozilla.scm
+import mock_mozilla.uid
+import mock_mozilla.util
 
 def scrub_callback(option, opt, value, parser):
     parser.values.scrub.append(value)
@@ -221,7 +221,7 @@ def command_parse(config_opts):
 
     if options.mode == 'buildsrpm' and not (options.spec and options.sources):
         if not options.scm:
-            raise mockbuild.exception.BadCmdline, "Must specify both --spec and --sources with --buildsrpm"
+            raise mock_mozilla.exception.BadCmdline, "Must specify both --spec and --sources with --buildsrpm"
     if options.spec:
         options.spec = os.path.expanduser(options.spec)
     if options.sources:
@@ -234,9 +234,9 @@ def setup_default_config_opts(config_opts, unprivUid):
     "sets up default configuration."
     # global
     config_opts['version'] = __VERSION__
-    config_opts['basedir'] = '/var/lib/mock' # root name is automatically added to this
+    config_opts['basedir'] = '/var/lib/mock_mozilla' # root name is automatically added to this
     config_opts['resultdir'] = '%(basedir)s/%(root)s/result'
-    config_opts['cache_topdir'] = '/var/cache/mock'
+    config_opts['cache_topdir'] = '/var/cache/mock_mozilla'
     config_opts['clean'] = True
     config_opts['chroothome'] = '/builddir'
     config_opts['log_config_file'] = 'logging.ini'
@@ -374,7 +374,7 @@ def set_config_opts_per_cmdline(config_opts, options, args):
                 k = '%%%s' % k
             config_opts['macros'].update({k: v})
         except:
-            raise mockbuild.exception.BadCmdline(
+            raise mock_mozilla.exception.BadCmdline(
                 "Bad option for '--define' (%s).  Use --define 'macro expr'"
                 % macro)
 
@@ -387,19 +387,19 @@ def set_config_opts_per_cmdline(config_opts, options, args):
 
     for i in options.disabled_plugins:
         if i not in config_opts['plugins']:
-            raise mockbuild.exception.BadCmdline(
+            raise mock_mozilla.exception.BadCmdline(
                 "Bad option for '--disable-plugin=%s'. Expecting one of: %s"
                 % (i, config_opts['plugins']))
         config_opts['plugin_conf']['%s_enable' % i] = False
     for i in options.enabled_plugins:
         if i not in config_opts['plugins']:
-            raise mockbuild.exception.BadCmdline(
+            raise mock_mozilla.exception.BadCmdline(
                 "Bad option for '--enable-plugin=%s'. Expecting one of: %s"
                 % (i, config_opts['plugins']))
         config_opts['plugin_conf']['%s_enable' % i] = True
 
     if options.mode in ("rebuild",) and len(args) > 1 and not options.resultdir:
-        raise mockbuild.exception.BadCmdline(
+        raise mock_mozilla.exception.BadCmdline(
             "Must specify --resultdir when building multiple RPMS.")
 
     if options.cleanup_after == False:
@@ -411,7 +411,7 @@ def set_config_opts_per_cmdline(config_opts, options, args):
         config_opts['cleanup_on_failure'] = True
     # cant cleanup unless resultdir is separate from the root dir 
     rootdir = os.path.join(config_opts['basedir'], config_opts['root']) 
-    if mockbuild.util.is_in_dir(config_opts['resultdir'] % config_opts, rootdir): 
+    if mock_mozilla.util.is_in_dir(config_opts['resultdir'] % config_opts, rootdir): 
         config_opts['cleanup_on_success'] = False
         config_opts['cleanup_on_failure'] = False
 
@@ -424,7 +424,7 @@ def set_config_opts_per_cmdline(config_opts, options, args):
                 k, v = option.split("=", 1)
                 config_opts['scm_opts'].update({k: v})
             except:
-                raise mockbuild.exception.BadCmdline(
+                raise mock_mozilla.exception.BadCmdline(
                 "Bad option for '--scm-option' (%s).  Use --scm-option 'key=value'"
                 % option)
 
@@ -447,7 +447,7 @@ def check_arch_combination(target_arch, config_opts):
         return
     host_arch = os.uname()[-1]
     if host_arch not in legal:
-        raise mockbuild.exception.InvalidArchitecture(
+        raise mock_mozilla.exception.InvalidArchitecture(
             "Cannot build target %s on arch %s" % (target_arch, host_arch))
 
 decorate(traceLog())
@@ -458,7 +458,7 @@ def do_rebuild(config_opts, chroot, srpms):
         sys.exit(50)
 
     # check that everything is kosher. Raises exception on error
-    for hdr in mockbuild.util.yieldSrpmHeaders(srpms):
+    for hdr in mock_mozilla.util.yieldSrpmHeaders(srpms):
         pass
 
     start = time.time()
@@ -485,7 +485,7 @@ def do_rebuild(config_opts, chroot, srpms):
             chroot.uidManager.dropPrivsTemp()
             cmd = config_opts["createrepo_command"].split()
             cmd.append(chroot.resultdir)
-            mockbuild.util.do(cmd)
+            mock_mozilla.util.do(cmd)
             chroot.uidManager.restorePrivs()
             
     except (Exception, KeyboardInterrupt):
@@ -501,10 +501,10 @@ def do_rebuild(config_opts, chroot, srpms):
 def do_buildsrpm(config_opts, chroot, options, args):
     # verify the input command line arguments actually exist
     if not os.path.isfile(options.spec):
-        raise mockbuild.exception.BadCmdline, \
+        raise mock_mozilla.exception.BadCmdline, \
             "input specfile does not exist: %s" % options.spec
     if not os.path.isdir(options.sources):
-        raise mockbuild.exception.BadCmdline, \
+        raise mock_mozilla.exception.BadCmdline, \
             "input sources directory does not exist: %s" % options.sources
     start = time.time()
     try:
@@ -550,11 +550,11 @@ def groupcheck():
     for g in os.getgroups():
         name = grp.getgrgid(g).gr_name
         members.append(name)
-        if name == "mock":
+        if name == "mock_mozilla":
             inmockgrp = True
             break
     if not inmockgrp:
-        raise RuntimeError, "Must be member of 'mock' group to run mock! (%s)" % members
+        raise RuntimeError, "Must be member of 'mock_mozilla' group to run mock! (%s)" % members
 
 def main(ret):
     "Main executable entry point."
@@ -591,7 +591,7 @@ def main(ret):
         os.setgroups(groups)
         unprivGid = pwd.getpwuid(unprivUid)[3]
 
-    uidManager = mockbuild.uid.uidManager(unprivUid, unprivGid)
+    uidManager = mock_mozilla.uid.uidManager(unprivUid, unprivGid)
     # go unpriv only when root to make --help etc work for non-mock users
     if os.geteuid() == 0:
         uidManager._becomeUser(unprivUid, unprivGid)
@@ -652,13 +652,13 @@ def main(ret):
     # set logging verbosity
     if options.verbose == 0:
         log.handlers[0].setLevel(logging.WARNING)
-        logging.getLogger("mockbuild.Root.state").handlers[0].setLevel(logging.WARNING)
+        logging.getLogger("mock_mozilla.Root.state").handlers[0].setLevel(logging.WARNING)
     elif options.verbose == 1:
         log.handlers[0].setLevel(logging.INFO)
     elif options.verbose == 2:
         log.handlers[0].setLevel(logging.DEBUG)
-        logging.getLogger("mockbuild.Root.build").propagate = 1
-        logging.getLogger("mockbuild").propagate = 1
+        logging.getLogger("mock_mozilla.Root.build").propagate = 1
+        logging.getLogger("mock_mozilla").propagate = 1
 
     # enable tracing if requested
     logging.getLogger("trace").propagate=0
@@ -680,7 +680,7 @@ def main(ret):
 
     # Fetch and prepare sources from SCM
     if config_opts['scm']:
-        scmWorker = mockbuild.scm.scmWorker(log, config_opts['scm_opts'])
+        scmWorker = mock_mozilla.scm.scmWorker(log, config_opts['scm_opts'])
         scmWorker.get_sources()
         (options.sources, options.spec) = scmWorker.prepare_sources()
 
@@ -689,7 +689,7 @@ def main(ret):
 
     # do whatever we're here to do
     log.info("mock.py version %s starting..." % __VERSION__)
-    chroot = mockbuild.backend.Root(config_opts, uidManager)
+    chroot = mock_mozilla.backend.Root(config_opts, uidManager)
 
     if options.printrootpath:
         print chroot.makeChrootPath('')
@@ -707,8 +707,8 @@ def main(ret):
 
     # New namespace starting from here
     try:
-        mockbuild.util.unshare(mockbuild.util.CLONE_NEWNS)
-    except mockbuild.exception.UnshareFailed, e:
+        mock_mozilla.util.unshare(mock_mozilla.util.CLONE_NEWNS)
+    except mock_mozilla.exception.UnshareFailed, e:
         log.error("Namespace unshare failed.")
         sys.exit(e.resultcode)
     except:
@@ -716,7 +716,7 @@ def main(ret):
 
     # set personality (ie. setarch)
     if config_opts['internal_setarch']:
-        mockbuild.util.condPersonality(config_opts['target_arch'])
+        mock_mozilla.util.condPersonality(config_opts['target_arch'])
 
     if options.mode == 'init':
         if config_opts['clean']:
@@ -731,7 +731,7 @@ def main(ret):
 
     elif options.mode == 'shell':
         if not os.path.exists(chroot.makeChrootPath()):
-            raise mockbuild.exception.ChrootNotInitialized, \
+            raise mock_mozilla.exception.ChrootNotInitialized, \
                 "chroot %s not initialized!" % chroot.makeChrootPath()
         if len(args):
             cmd = ' '.join(args)
@@ -741,7 +741,7 @@ def main(ret):
 
     elif options.mode == 'chroot':
         if not os.path.exists(chroot.makeChrootPath()):
-            raise mockbuild.exception.ChrootNotInitialized, \
+            raise mock_mozilla.exception.ChrootNotInitialized, \
                 "chroot %s not initialized!" % chroot.makeChrootPath()
         if len(args) == 0:
             log.critical("You must specify a command to run with --chroot")
@@ -753,7 +753,7 @@ def main(ret):
             log.critical("You must specify an SRPM file with --installdeps")
             sys.exit(50)
 
-        for hdr in mockbuild.util.yieldSrpmHeaders(args, plainRpmOk=1):
+        for hdr in mock_mozilla.util.yieldSrpmHeaders(args, plainRpmOk=1):
             pass
         chroot.tryLockBuildRoot()
         try:
@@ -801,7 +801,7 @@ def main(ret):
         do_buildsrpm(config_opts, chroot, options, args)
 
     elif options.mode == 'orphanskill':
-        mockbuild.util.orphansKill(chroot.makeChrootPath())
+        mock_mozilla.util.orphansKill(chroot.makeChrootPath())
     elif options.mode == 'copyin':
         chroot.tryLockBuildRoot()
         chroot._resetLogging()
@@ -880,17 +880,17 @@ if __name__ == '__main__':
         exitStatus = 7
         log.error("Exiting on user interrupt, <CTRL>-C")
 
-    except (mockbuild.exception.ResultDirNotAccessible,), exc:
+    except (mock_mozilla.exception.ResultDirNotAccessible,), exc:
         exitStatus = exc.resultcode
         log.error(str(exc))
         killOrphans = 0
 
-    except (mockbuild.exception.BadCmdline, mockbuild.exception.BuildRootLocked), exc:
+    except (mock_mozilla.exception.BadCmdline, mock_mozilla.exception.BuildRootLocked), exc:
         exitStatus = exc.resultcode
         log.error(str(exc))
         killOrphans = 0
 
-    except (mockbuild.exception.Error), exc:
+    except (mock_mozilla.exception.Error), exc:
         exitStatus = exc.resultcode
         log.error(str(exc))
 
@@ -899,7 +899,7 @@ if __name__ == '__main__':
         log.exception(exc)
 
     if killOrphans and retParams:
-        mockbuild.util.orphansKill(retParams["chroot"].makeChrootPath())
+        mock_mozilla.util.orphansKill(retParams["chroot"].makeChrootPath())
 
     logging.shutdown()
     sys.exit(exitStatus)

@@ -22,7 +22,7 @@ export VERBOSE
 
 source ${CURDIR}/tests/functions
 
-MOCKSRPM=${CURDIR}/mock-*.src.rpm
+MOCKSRPM=${CURDIR}/mock_mozilla-*.src.rpm
 DIR=$(cd $(dirname $0); pwd)
 TOP_SRCTREE=$DIR/../
 cd $TOP_SRCTREE
@@ -33,15 +33,15 @@ cd $TOP_SRCTREE
 testConfig=fedora-15-x86_64
 uniqueext="$$-$RANDOM"
 outdir=${CURDIR}/mock-unit-test
-MOCKCMD="sudo ./py/mock.py $VERBOSE --resultdir=$outdir --uniqueext=$uniqueext -r $testConfig $MOCK_EXTRA_ARGS"
-CHROOT=/var/lib/mock/${testConfig}-$uniqueext/root
+MOCKCMD="sudo ./py/mock_mozilla.py $VERBOSE --resultdir=$outdir --uniqueext=$uniqueext -r $testConfig $MOCK_EXTRA_ARGS"
+CHROOT=/var/lib/mock_mozilla/${testConfig}-$uniqueext/root
 
 trap '$MOCKCMD --clean; exit 1' INT HUP QUIT TERM
 
 export CURDIR MOCKSRPM DIR TOP_SRCTREE testConfig uniqueext outdir MOCKCMD CHROOT
 
 # clear out root cache so we get at least run without root cache present
-#sudo rm -rf /var/lib/mock/cache/${testConfig}/root_cache
+#sudo rm -rf /var/lib/mock_mozilla/cache/${testConfig}/root_cache
 
 #
 # pre-populate yum cache for the rest of the commands below
@@ -50,7 +50,7 @@ header "pre-populating the cache"
 runcmd "$MOCKCMD --init"
 runcmd "$MOCKCMD --installdeps $MOCKSRPM"
 if [ ! -e $CHROOT/usr/include/python* ]; then
-    echo "installdeps test FAILED. could not find /usr/include/python*"
+    echo "installdeps test FAILED. could not find $CHROOT/usr/include/python*"
     exit 1
 fi
 
@@ -82,8 +82,8 @@ runcmd "$MOCKCMD --offline --clean"
 #
 # Test build all configs we ship.
 #
-for i in $(ls etc/mock | grep .cfg | grep -v default | egrep -v 'arm|ppc|s390|sparc'); do
-    MOCKCMD="sudo ./py/mock.py $VERBOSE --resultdir=$outdir --uniqueext=$uniqueext -r $(basename $i .cfg) $MOCK_EXTRA_ARGS"
+for i in $(ls etc/mock_mozilla | grep .cfg | grep -v default | egrep -v 'arm|ppc|s390|sparc'); do
+    MOCKCMD="sudo ./py/mock_mozilla.py $VERBOSE --resultdir=$outdir --uniqueext=$uniqueext -r $(basename $i .cfg) $MOCK_EXTRA_ARGS"
     if [ "${i#epel-4-x86_64.cfg}" != "" ]; then
 	header "testing config $(basename $i .cfg) with tmpfs plugin"
 	runcmd "$MOCKCMD --enable-plugin=tmpfs --rebuild $MOCKSRPM "

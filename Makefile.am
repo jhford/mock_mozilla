@@ -25,42 +25,42 @@ EXTRA_DIST = contrib
 bin_PROGRAMS=
 CLEANFILES += $(EXTRA_PROGRAMS)
 
-mocketcdir = $(sysconfdir)/mock
-mocketc_DATA = $(wildcard $(top_srcdir)/etc/mock/*.cfg) $(top_srcdir)/etc/mock/logging.ini
+mocketcdir = $(sysconfdir)/$(RELEASE_NAME)
+mocketc_DATA = $(wildcard $(top_srcdir)/$(RELEASE_NAME)/*.cfg) $(top_srcdir)/etc/$(RELEASE_NAME)/logging.ini
 
 EXTRA_DIST += docs etc
-dist_sbin_SCRIPTS = py/mock.py
-man_MANS = docs/mock.1
+dist_sbin_SCRIPTS = py/$(RELEASE_NAME).py
+man_MANS = docs/$(RELEASE_NAME).1
 
 pamdir = $(sysconfdir)/pam.d/
-pam_DATA = etc/pam/mock
+pam_DATA = etc/pam/$(RELEASE_NAME)
 
 consoledir = $(sysconfdir)/security/console.apps/
-console_DATA = etc/consolehelper/mock
+console_DATA = etc/consolehelper/$(RELEASE_NAME)
 
 bashcompdir = $(sysconfdir)/bash_completion.d/
-bashcomp_DATA = etc/bash_completion.d/mock.bash
+bashcomp_DATA = etc/bash_completion.d/$(RELEASE_NAME).bash
 
-pluginsdir = $(pythondir)/mockbuild/plugins
+pluginsdir = $(pythondir)/$(RELEASE_NAME)/plugins
 plugins_PYTHON = \
-    py/mockbuild/plugins/bind_mount.py \
-    py/mockbuild/plugins/ccache.py     \
-    py/mockbuild/plugins/root_cache.py \
-    py/mockbuild/plugins/tmpfs.py \
-    py/mockbuild/plugins/yum_cache.py \
-    py/mockbuild/plugins/selinux.py
+    py/$(RELEASE_NAME)/plugins/bind_mount.py \
+    py/$(RELEASE_NAME)/plugins/ccache.py     \
+    py/$(RELEASE_NAME)/plugins/root_cache.py \
+    py/$(RELEASE_NAME)/plugins/tmpfs.py \
+    py/$(RELEASE_NAME)/plugins/yum_cache.py \
+    py/$(RELEASE_NAME)/plugins/selinux.py
 
-mockbuilddir = $(pythondir)/mockbuild
+mockbuilddir = $(pythondir)/$(RELEASE_NAME)
 mockbuild_PYTHON = \
-    py/mockbuild/__init__.py        \
-    py/mockbuild/exception.py       \
-    py/mockbuild/util.py            \
-    py/mockbuild/backend.py         \
-    py/mockbuild/trace_decorator.py \
-    py/mockbuild/uid.py             \
-    py/mockbuild/scm.py
+    py/$(RELEASE_NAME)/__init__.py        \
+    py/$(RELEASE_NAME)/exception.py       \
+    py/$(RELEASE_NAME)/util.py            \
+    py/$(RELEASE_NAME)/backend.py         \
+    py/$(RELEASE_NAME)/trace_decorator.py \
+    py/$(RELEASE_NAME)/uid.py             \
+    py/$(RELEASE_NAME)/scm.py
 
-CLEANFILES += py/*.pyc py/mockbuild/*.pyc py/mockbuild/plugins/*.pyc
+CLEANFILES += py/*.pyc py/$(RELEASE_NAME)/*.pyc py/$(RELEASE_NAME)/plugins/*.pyc
 
 dist: ChangeLog AUTHORS
 ChangeLog:
@@ -69,7 +69,7 @@ ChangeLog:
 AUTHORS:
 	(GIT_DIR=.git git log | grep ^Author | sort |uniq > .authors.tmp && mv .authors.tmp AUTHORS; rm -f .authors.tmp) || (touch AUTHORS; echo 'git directory not found: installing possibly empty AUTHORS.' >&2)
 
-REPLACE_VARS_ON_INSTALL=$(sbindir)/mock.py
+REPLACE_VARS_ON_INSTALL=$(sbindir)/$(RELEASE_NAME).py
 install-exec-hook:
 	for i in $(REPLACE_VARS_ON_INSTALL); do      \
 		file=$(DESTDIR)/$$i			;\
@@ -80,11 +80,11 @@ install-exec-hook:
                 perl -p -i -e 's|^PKGDATADIR\s*=.*|PKGDATADIR="$(pkgdatadir)"|' $$file        ;\
                 perl -p -i -e 's|^LIBDIR\s*=.*|LIBDIR="$(libdir)"|' $$file        ;\
         done
-	mv $(DESTDIR)/$(sbindir)/mock.py $(DESTDIR)/$(sbindir)/mock
+	mv $(DESTDIR)/$(sbindir)/$(RELEASE_NAME).py $(DESTDIR)/$(sbindir)/$(RELEASE_NAME)
 
 install-data-hook:
-	perl -p -i -e 's|(=\s*)/etc/mock\b|$$1$(sysconfdir)/mock|' \
-		$(DESTDIR)$(bashcompdir)/mock.bash
+	perl -p -i -e 's|(=\s*)/etc/$(RELEASE_NAME)\b|$$1$(sysconfdir)/$(RELEASE_NAME)|' \
+		$(DESTDIR)$(bashcompdir)/$(RELEASE_NAME).bash
 
 TOPDIR := $(shell cd $(top_builddir);pwd)
 BUILDDIR = $(TOPDIR)/_rpmbuild
@@ -114,7 +114,7 @@ srpm: dist
 	rm -rf $(BUILDDIR)
 
 install-devel-packages:
-	yum --disablerepo='beaker*' install mock rpm-build fedora-packager vim-enhanced git-all
+	yum --disablerepo='beaker*' install mock rpm-build fedora-packager vim-enhanced git-all python-devel
 
 help:
 	@echo

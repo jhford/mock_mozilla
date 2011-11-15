@@ -6,9 +6,9 @@
 # python library imports
 
 # our imports
-from mockbuild.trace_decorator import decorate, traceLog
+from mock_mozilla.trace_decorator import decorate, traceLog
 
-import mockbuild.util
+import mock_mozilla.util
 
 requires_api_version = "1.0"
 
@@ -35,4 +35,4 @@ class BindMount(object):
     decorate(traceLog())
     def _bindMountPreInitHook(self):
         for srcdir, destdir in self.bind_opts['dirs']:
-            mockbuild.util.mkdirIfAbsent(self.rootObj.makeChrootPath(destdir))
+            mock_mozilla.util.mkdirIfAbsent(self.rootObj.makeChrootPath(destdir))

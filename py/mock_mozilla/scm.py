@@ -13,8 +13,8 @@ import pwd
 import os
 
 # our imports
-from mockbuild.trace_decorator import traceLog, decorate
-import mockbuild.util
+from mock_mozilla.trace_decorator import traceLog, decorate
+import mock_mozilla.util
 
 # class
 class scmWorker(object):
@@ -73,7 +73,7 @@ class scmWorker(object):
 
     decorate(traceLog())
     def get_sources(self):
-        self.wrk_dir = tempfile.mkdtemp(".mock-scm." + self.pkg)
+        self.wrk_dir = tempfile.mkdtemp(".mock_mozilla-scm." + self.pkg)
         self.src_dir = self.wrk_dir + "/" + self.pkg
         self.log.debug("SCM checkout directory: " + self.wrk_dir)
         os.environ['CVS_RSH'] = "ssh"
@@ -83,9 +83,9 @@ class scmWorker(object):
         # non-interactively
         old_home = os.environ['HOME']
         os.environ['HOME'] = pwd.getpwuid(os.getuid()).pw_dir
-        mockbuild.util.do(shlex.split(self.get), shell=False, cwd=self.wrk_dir)
+        mock_mozilla.util.do(shlex.split(self.get), shell=False, cwd=self.wrk_dir)
         if self.postget:
-            mockbuild.util.do(shlex.split(self.postget), shell=False, cwd=self.src_dir)
+            mock_mozilla.util.do(shlex.split(self.postget), shell=False, cwd=self.src_dir)
         os.environ['HOME'] = old_home
 
         self.log.debug("Fetched sources from SCM")
@@ -153,7 +153,7 @@ class scmWorker(object):
             os.chdir(self.wrk_dir)
             os.rename(self.name, tardir)
             cmd = "tar czf " + tarball + " " + tardir
-            mockbuild.util.do(shlex.split(cmd), shell=False, cwd=self.wrk_dir)
+            mock_mozilla.util.do(shlex.split(cmd), shell=False, cwd=self.wrk_dir)
             os.rename(tarball, tardir + "/" + tarball)
             os.rename(tardir, self.name)
             os.chdir(dir)
@@ -172,4 +172,4 @@ class scmWorker(object):
     decorate(traceLog())
     def clean(self):
         self.log.debug("Clean SCM checkout directory")
-        mockbuild.util.rmtree(self.wrk_dir)
+        mock_mozilla.util.rmtree(self.wrk_dir)

@@ -3,13 +3,13 @@
 %define minor @RELEASE_MINOR@
 %define sub @RELEASE_SUBLEVEL@
 %define extralevel @RELEASE_RPM_EXTRALEVEL@
-%define release_name mock
+%define release_name @RELEASE_NAME@
 %define release_version %{major}.%{minor}.%{sub}%{extralevel}
 
 %{!?python_sitelib: %define python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib()")}
 
 Summary: Builds packages inside chroots
-Name: mock
+Name: %{release_name}
 Version: %{release_version}
 Release: 1%{?dist}
 License: GPLv2+
@@ -28,7 +28,8 @@ Requires: python-hashlib
 %endif
 
 %description
-Mock takes an SRPM and builds it in a chroot
+Mock takes an SRPM and builds it in a chroot.  This version has some 
+experimental changes to build arbitrary software using the mock base
 
 %prep
 %setup -q
@@ -40,13 +41,14 @@ make
 %install
 rm -rf $RPM_BUILD_ROOT
 make DESTDIR=$RPM_BUILD_ROOT install
-mkdir -p $RPM_BUILD_ROOT/var/lib/mock
-mkdir -p $RPM_BUILD_ROOT/var/cache/mock
-ln -s consolehelper $RPM_BUILD_ROOT/usr/bin/mock
+mkdir -p $RPM_BUILD_ROOT/var/lib/%{name}
+mkdir -p $RPM_BUILD_ROOT/var/cache/%{name}
+mkdir -p $RPM_BUILD_ROOT/etc/%{name}
+ln -s consolehelper $RPM_BUILD_ROOT/usr/bin/%{name}
 
 # compatibility symlinks
 # (probably be nuked in the future)
-pushd $RPM_BUILD_ROOT/etc/mock
+pushd $RPM_BUILD_ROOT/etc/%{name}
 ln -s epel-4-i386.cfg   fedora-4-i386-epel.cfg
 ln -s epel-4-ppc.cfg    fedora-4-ppc-epel.cfg
 ln -s epel-4-x86_64.cfg fedora-4-x86_64-epel.cfg
@@ -59,20 +61,20 @@ ln -s fedora-rawhide-x86_64.cfg fedora-devel-x86_64.cfg
 ln -s fedora-rawhide-ppc.cfg fedora-devel-ppc.cfg
 ln -s fedora-rawhide-ppc64.cfg fedora-devel-ppc64.cfg
 popd
-echo "%defattr(0644, root, mock)" > %{name}.cfgs
-find $RPM_BUILD_ROOT%{_sysconfdir}/mock -name "*.cfg" \
+echo "%defattr(0644, root, %{name})" > %{name}.cfgs
+find $RPM_BUILD_ROOT%{_sysconfdir}/%{name} -name "*.cfg" \
     | sed -e "s|^$RPM_BUILD_ROOT|%%config(noreplace) |" >> %{name}.cfgs
 #cat %{name}.cfgs
 
 # just for %%ghosting purposes
-ln -s fedora-rawhide-x86_64.cfg $RPM_BUILD_ROOT%{_sysconfdir}/mock/default.cfg
+ln -s fedora-rawhide-x86_64.cfg $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/default.cfg
 
 %clean
 rm -rf $RPM_BUILD_ROOT
 
 %pre
 if [ $1 -eq 1 ]; then
-    groupadd -r mock >/dev/null 2>&1 || :
+    groupadd -r %{name} >/dev/null 2>&1 || :
 fi
 
 %post
@@ -88,15 +90,15 @@ if [ ! -e %{_sysconfdir}/%{name}/default.cfg ] ; then
     done
 fi
 # fix cache permissions from old installs
-chmod 2775 /var/cache/mock
+chmod 2775 /var/cache/%{name}
 :
 
 %files -f %{name}.cfgs
 %defattr(-, root, root)
 
 # executables
-%{_bindir}/mock
-%attr(0755, root, root) %{_sbindir}/mock
+%{_bindir}/%{name}
+%attr(0755, root, root) %{_sbindir}/%{name}
 
 # python stuff
 %{python_sitelib}/*
@@ -110,13 +112,13 @@ chmod 2775 /var/cache/mock
 %{_sysconfdir}/bash_completion.d
 
 # docs
-%{_mandir}/man1/mock.1*
+%{_mandir}/man1/%{name}.1*
 %doc ChangeLog
 
 # cache & build dirs
-%defattr(0775, root, mock, 02775)
-%dir /var/cache/mock
-%dir /var/lib/mock
+%defattr(0775, root, %{name}, 02775)
+%dir /var/cache/%{name}
+%dir /var/lib/%{name}
  
 %changelog
 * Mon Oct 31 2011 Clark Williams <williams@redhat.com> - 1.1.17-1
