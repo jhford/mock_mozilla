@@ -43,7 +43,6 @@ rm -rf $RPM_BUILD_ROOT
 make DESTDIR=$RPM_BUILD_ROOT install
 mkdir -p $RPM_BUILD_ROOT/var/lib/%{name}
 mkdir -p $RPM_BUILD_ROOT/var/cache/%{name}
-mkdir -p $RPM_BUILD_ROOT/etc/%{name}
 ln -s consolehelper $RPM_BUILD_ROOT/usr/bin/%{name}
 
 # compatibility symlinks

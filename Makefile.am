@@ -26,7 +26,7 @@ bin_PROGRAMS=
 CLEANFILES += $(EXTRA_PROGRAMS)
 
 mocketcdir = $(sysconfdir)/$(RELEASE_NAME)
-mocketc_DATA = $(wildcard $(top_srcdir)/$(RELEASE_NAME)/*.cfg) $(top_srcdir)/etc/$(RELEASE_NAME)/logging.ini
+mocketc_DATA = $(wildcard $(top_srcdir)/etc/$(RELEASE_NAME)/*.cfg) $(top_srcdir)/etc/$(RELEASE_NAME)/logging.ini
 
 EXTRA_DIST += docs etc
 dist_sbin_SCRIPTS = py/$(RELEASE_NAME).py
