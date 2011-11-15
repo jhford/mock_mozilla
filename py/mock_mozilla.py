@@ -243,7 +243,7 @@ def setup_default_config_opts(config_opts, unprivUid):
     config_opts['rpmbuild_timeout'] = 0
     config_opts['chrootuid'] = unprivUid
     try:
-        config_opts['chrootgid'] = grp.getgrnam("mock")[2]
+        config_opts['chrootgid'] = grp.getgrnam("mock_mozilla")[2]
     except KeyError:
         #  'mock' group doesnt exist, must set in config file
         pass
@@ -688,7 +688,7 @@ def main(ret):
     uidManager._becomeUser(0, 0)
 
     # do whatever we're here to do
-    log.info("mock.py version %s starting..." % __VERSION__)
+    log.info("mock_mozilla.py version %s starting..." % __VERSION__)
     chroot = mock_mozilla.backend.Root(config_opts, uidManager)
 
     if options.printrootpath:
