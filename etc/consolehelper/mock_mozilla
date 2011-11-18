@@ -1,5 +1,5 @@
 USER=root
-PROGRAM=/usr/sbin/mock-mozilla
+PROGRAM=/usr/sbin/mock_mozilla
 SESSION=false
 FALLBACK=false
 KEEP_ENV_VARS=COLUMNS
