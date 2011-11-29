@@ -1,9 +1,9 @@
 # bash >= 3 completion for mock(1)
 
-_mock()
+_mock_mozilla()
 {
     COMPREPLY=()
-    local cur prev cword cfgdir=/etc/mock
+    local cur prev cword cfgdir=/etc/mock_mozilla
     local -a words
     if declare -F _get_comp_words_by_ref &>/dev/null ; then
         _get_comp_words_by_ref cur prev words cword
@@ -94,7 +94,7 @@ _mock()
     COMPREPLY=( $( compgen -f -o plusdirs -X '!*.@(?(no)src.r|s)pm' \
         -- "$cur" ) )
 } &&
-complete -F _mock -o filenames mock mock.py
+complete -F _mock -o filenames mock_mozilla mock_mozilla.py
 
 # Local variables:
 # mode: shell-script
