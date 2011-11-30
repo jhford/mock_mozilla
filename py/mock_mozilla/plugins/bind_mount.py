@@ -35,4 +35,5 @@ class BindMount(object):
     decorate(traceLog())
     def _bindMountPreInitHook(self):
         for srcdir, destdir in self.bind_opts['dirs']:
+            mock_mozilla.util.mkdirIfAbsent(srcdir)
             mock_mozilla.util.mkdirIfAbsent(self.rootObj.makeChrootPath(destdir))
