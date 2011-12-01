@@ -661,9 +661,9 @@ class Root(object):
             log.debug("shell: mounting all filesystems")
             self._mountall()
             self.state("shell")
-            ret = mock_mozilla.util.doshell(chrootPath=self.makeChrootPath(), 
+            ret = mock_mozilla.util.doshell(chrootPath=self.makeChrootPath(),
                                          uid=uid, gid=gid,
-                                         cmd=cmd)
+                                         cmd=cmd, cwd=options.cwd)
         finally:
             log.debug("shell: unmounting all filesystems")
             self._umountall()

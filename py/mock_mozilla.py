@@ -734,7 +734,7 @@ def main(ret):
             raise mock_mozilla.exception.ChrootNotInitialized, \
                 "chroot %s not initialized!" % chroot.makeChrootPath()
         if len(args):
-            cmd = ' '.join(args)
+            cmd = args
         else:
             cmd = None
         sys.exit(chroot.shell(options, cmd))

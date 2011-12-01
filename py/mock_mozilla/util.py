@@ -379,28 +379,27 @@ def is_in_dir(path, directory):
     return os.path.commonprefix([path, directory]) == directory
 
 
-def doshell(chrootPath=None, uid=None, gid=None, cmd=None):
+def doshell(chrootPath=None, uid=None, gid=None, cmd=None, cwd=None, env={}):
     log = getLog()
     log.debug("doshell: chrootPath:%s, uid:%d, gid:%d" % (chrootPath, uid, gid))
     environ = clean_env()
     environ['PROMPT_COMMAND'] = 'echo -n "<mock-chroot>"'
     environ['SHELL'] = '/bin/bash'
+    environ.update(env)
     log.debug("doshell environment: %s", environ)
-    if cmd:
-        cmdstr = '/bin/bash -c "%s"' % cmd
-    else:
-        cmdstr = "/bin/bash -i -l"
-    preexec = ChildPreExec(personality=None, chrootPath=chrootPath, cwd=None, 
-                           uid=uid, gid=gid, env=environ, shell=True)
-    log.debug("doshell: command: %s" % cmdstr)
-    return subprocess.call(cmdstr, preexec_fn=preexec, env=environ, shell=True)
+    if cmd is None:
+        cmd = "/bin/bash -i -l"
+    preexec = ChildPreExec(personality=None, chrootPath=chrootPath, cwd=cwd,
+                           uid=uid, gid=gid, env=environ, shell=False)
+    log.debug("doshell: command: %s" % str(cmd))
+    return subprocess.call(cmd, preexec_fn=preexec, env=environ, shell=False)
 
 
 
 def clean_env():
     env = {'TERM' : 'vt100',
            'SHELL' : '/bin/bash',
-           'HOME' : '/builddir', 
+           'HOME' : '/builds',
            'HOSTNAME' : 'mock',
            'PATH' : '/usr/bin:/bin:/usr/sbin:/sbin',
            'TMPDIR' : '/tmp' }
