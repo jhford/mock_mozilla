@@ -18,7 +18,6 @@ import shutil
 import subprocess
 import time
 import errno
-import sys
 
 # our imports
 import mock_mozilla.exception
@@ -247,10 +246,6 @@ def logOutput(fds, logger, returnOutput=1, start=0, timeout=0):
             if input == "":
                 done = 1
                 break
-            else:
-                for i in input.split("\n"):
-                    if i.strip() != "":
-                        sys.stdout.write("COMBINED OUTPUT: %s\n" % i)
             if logger is not None:
                 lines = input.split("\n")
                 if tail:
