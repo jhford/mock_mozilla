@@ -246,15 +246,18 @@ def logOutput(fds, logger, returnOutput=1, start=0, timeout=0):
             if input == "":
                 done = 1
                 break
-            if logger is not None:
-                lines = input.split("\n")
-                if tail:
-                    lines[0] = tail + lines[0]
-                # we may not have all of the last line
-                tail = lines.pop()
-                for line in lines:
-                    if line == '': continue
+            lines = input.split("\n")
+            if tail:
+                lines[0] = tail + lines[0]
+            # we may not have all of the last line
+            tail = lines.pop()
+            for line in lines:
+                if line == '': continue
+                if logger is None:
+                    print line
+                else:
                     logger.debug(line)
+            if logger is not None:
                 for h in logger.handlers:
                     h.flush()
             if returnOutput:
