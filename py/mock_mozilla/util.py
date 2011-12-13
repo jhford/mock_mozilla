@@ -386,11 +386,11 @@ def doshell(chrootPath=None, uid=None, gid=None, cmd=None, cwd=None, env={}):
     environ.update(env)
     log.debug("doshell environment: %s", environ)
     if cmd is None:
-        cmd = "/bin/bash -i -l"
+        cmd = "/bin/bash -i --login"
     preexec = ChildPreExec(personality=None, chrootPath=chrootPath, cwd=cwd,
-                           uid=uid, gid=gid, env=environ, shell=False)
+                           uid=uid, gid=gid, env=environ, shell=True)
     log.debug("doshell: command: %s" % str(cmd))
-    return subprocess.call(cmd, preexec_fn=preexec, env=environ, shell=False)
+    return subprocess.call(cmd, preexec_fn=preexec, env=environ, shell=True)
 
 
 
