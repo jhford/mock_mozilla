@@ -21,3 +21,4 @@ mock-unit-test
 patches
 bugzillas
 *.patch
+*.sw?
