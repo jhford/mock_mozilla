@@ -22,14 +22,13 @@ mock_mozilla $MOCK_OPTS --init
 mock_mozilla $MOCK_OPTS --shell "chown -R mock_mozilla:mock_mozilla $T_BUILDDIR"
 
 # This installs *all* of the build dependencies for building Firefox
-mock_mozilla $MOCK_OPTS --install zip autoconf213 gtk2-devel libnotify-devel yasm alsa-lib-devel curl-devel mercurial wireless-tools-devel libXt-devel mesa-libGL-devel glibc-static libstdc++-static
+mock_mozilla $MOCK_OPTS --install zip autoconf213 gtk2-devel libnotify-devel yasm alsa-lib-devel curl-devel mercurial wireless-tools-devel libXt-devel mesa-libGL-devel python glibc-static libstdc++-static
 
 # This is the repository work, showing that this work
 # can be done outside of the chroot just as easily as inside
 if [ -d $BUILDDIR/mozilla-central/.hg ] ; then
     hg pull -u -R $BUILDDIR/mozilla-central
-    
-else 
+else
     (cd $BUILDDIR && hg -R $BUILDDIR clone http://hg.mozilla.org/mozilla-central)
 fi
 cat > $BUILDDIR/mozilla-central/.mozconfig << EOF
