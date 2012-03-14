@@ -45,21 +45,6 @@ mkdir -p $RPM_BUILD_ROOT/var/lib/%{name}
 mkdir -p $RPM_BUILD_ROOT/var/cache/%{name}
 ln -s consolehelper $RPM_BUILD_ROOT/usr/bin/%{name}
 
-# compatibility symlinks
-# (probably be nuked in the future)
-pushd $RPM_BUILD_ROOT/etc/%{name}
-ln -s epel-4-i386.cfg   fedora-4-i386-epel.cfg
-ln -s epel-4-ppc.cfg    fedora-4-ppc-epel.cfg
-ln -s epel-4-x86_64.cfg fedora-4-x86_64-epel.cfg
-ln -s epel-5-i386.cfg   fedora-5-i386-epel.cfg
-ln -s epel-5-ppc.cfg    fedora-5-ppc-epel.cfg
-ln -s epel-5-x86_64.cfg fedora-5-x86_64-epel.cfg
-# more compat, from devel/rawhide rename
-ln -s fedora-rawhide-i386.cfg fedora-devel-i386.cfg
-ln -s fedora-rawhide-x86_64.cfg fedora-devel-x86_64.cfg
-ln -s fedora-rawhide-ppc.cfg fedora-devel-ppc.cfg
-ln -s fedora-rawhide-ppc64.cfg fedora-devel-ppc64.cfg
-popd
 echo "%defattr(0644, root, %{name})" > %{name}.cfgs
 find $RPM_BUILD_ROOT%{_sysconfdir}/%{name} -name "*.cfg" \
     | sed -e "s|^$RPM_BUILD_ROOT|%%config(noreplace) |" >> %{name}.cfgs
@@ -89,7 +74,7 @@ if [ ! -e %{_sysconfdir}/%{name}/default.cfg ] ; then
     done
 fi
 # fix cache permissions from old installs
-chmod 2775 /var/cache/%{name}
+chmod 2775 /builds/%{name}
 :
 
 %files -f %{name}.cfgs
@@ -116,8 +101,7 @@ chmod 2775 /var/cache/%{name}
 
 # cache & build dirs
 %defattr(0775, root, %{name}, 02775)
-%dir /var/cache/%{name}
-%dir /var/lib/%{name}
+%dir /builds/%{name}
  
 %changelog
 * Mon Oct 31 2011 Clark Williams <williams@redhat.com> - 1.1.17-1
