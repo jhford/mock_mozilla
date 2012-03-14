@@ -4,12 +4,12 @@
 
 ####################################
 # change version here. --> BOTH PLACES PLEASE!
-AC_INIT([mock_mozilla],[1.1.17])
+AC_INIT([mock_mozilla],[1.0])
 
 temp_RELEASE_NAME=mock_mozilla
 temp_RELEASE_MAJOR=1
-temp_RELEASE_MINOR=1
-temp_RELEASE_SUBLEVEL=17
+temp_RELEASE_MINOR=0
+temp_RELEASE_SUBLEVEL=0
 temp_RELEASE_EXTRALEVEL=
 ####################################
 

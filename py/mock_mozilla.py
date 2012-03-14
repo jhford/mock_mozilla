@@ -736,7 +736,7 @@ def main(ret):
         if len(args):
             cmd = ' '.join(args)
         else:
-            cmd = None
+            cmd = "/bin/bash --login"
         sys.exit(chroot.shell(options, cmd))
 
     elif options.mode == 'chroot':
