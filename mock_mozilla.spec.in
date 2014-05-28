@@ -41,6 +41,7 @@ make
 %install
 rm -rf $RPM_BUILD_ROOT
 make DESTDIR=$RPM_BUILD_ROOT install
+mkdir -p $RPM_BUILD_ROOT/usr/bin
 mkdir -p $RPM_BUILD_ROOT/builds/%{name}
 ln -s consolehelper $RPM_BUILD_ROOT/usr/bin/%{name}
 
